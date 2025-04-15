@@ -71,7 +71,7 @@ func _physics_process(delta: float) -> void:
 		player.set_physics_process(false)
 		is_game_over = true
 		if player.score < 20:
-			label.text = "YOU CAN DO BETTER THAN THAT BRO"
+			label.text = "YOU CAN DO BETTER THAN THAT BRO!!"
 			
 		if player.score > 20 and player.score < 40:
 			label.text = "YOU TRIED BUT STILL NOT ENOUGH"
