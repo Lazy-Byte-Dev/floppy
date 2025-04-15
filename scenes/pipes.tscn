@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=3 uid="uid://cgtf7q0ll6k8y"]
+
+[ext_resource type="Script" uid="uid://b81rgkjpqbljr" path="res://scenes/check_point.gd" id="1_3ahhd"]
+[ext_resource type="AudioStream" uid="uid://b5ldojs3y34mk" path="res://music/check point.wav" id="2_prsvi"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f71w0"]
+albedo_color = Color(1, 0, 0.0431373, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_f71w0"]
+material = SubResource("StandardMaterial3D_f71w0")
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_f71w0"]
+height = 6.03906
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_f17p0"]
+height = 2.38525
+radius = 0.321289
+
+[node name="Pipes" type="CharacterBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 3.58648, 0, 0, 0, 1, 0, -4.44648, 0)
+mesh = SubResource("CylinderMesh_f71w0")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 3.51231, 0, 0, 0, 1, 0, 5.40935, 0)
+mesh = SubResource("CylinderMesh_f71w0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.97619, 0)
+shape = SubResource("CylinderShape3D_f71w0")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.96539, 0)
+shape = SubResource("CylinderShape3D_f71w0")
+
+[node name="CheckPoint" type="Area3D" parent="."]
+script = ExtResource("1_3ahhd")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CheckPoint"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.507373, 0)
+shape = SubResource("CylinderShape3D_f17p0")
+
+[node name="CheckPointSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_prsvi")
+volume_db = -12.0
+
+[connection signal="body_entered" from="CheckPoint" to="CheckPoint" method="_on_body_entered"]

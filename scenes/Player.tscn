@@ -1,0 +1,87 @@
+[gd_scene load_steps=7 format=3 uid="uid://cnf1d81bvh4t4"]
+
+[ext_resource type="Script" uid="uid://ubcyueh4cviq" path="res://scenes/player.gd" id="1_p0vlq"]
+[ext_resource type="AudioStream" uid="uid://bydmd81qsylo" path="res://music/tap-notification-180637.mp3" id="2_v6fml"]
+
+[sub_resource type="Shader" id="Shader_v6fml"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.4.stable's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform ivec2 albedo_texture_size;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+// Bubble-specific uniforms
+uniform vec4 bubble_color : source_color = vec4(0.8, 0.9, 1.0, 0.6); // Soft blue with transparency
+uniform float bubble_distortion : hint_range(0.0, 0.1) = 0.02; // Bubble surface distortion
+uniform float bubble_movement_speed : hint_range(0.0, 5.0) = 1.0; // Movement speed
+uniform float bubble_opacity : hint_range(0.0, 1.0) = 0.7; // Overall opacity
+
+// Existing material uniforms
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float specular : hint_range(0.0, 1.0, 0.01) = 0.5;
+uniform float roughness : hint_range(0.0, 1.0) = 0.1;
+
+void vertex() {
+    // Add subtle vertex displacement for bubble-like movement
+    float time = TIME * bubble_movement_speed;
+    VERTEX += NORMAL * sin(time + VERTEX.x) * bubble_distortion * 0.5;
+    VERTEX += NORMAL * cos(time + VERTEX.y) * bubble_distortion * 0.5;
+}
+
+void fragment() {
+    // Base UV with slight distortion
+    vec2 base_uv = UV;
+    base_uv += vec2(
+        sin(TIME * 0.2 + base_uv.y * 5.0) * 0.02,
+        cos(TIME * 0.2 + base_uv.x * 5.0) * 0.02
+    );
+
+    // Texture sampling
+    vec4 albedo_tex = texture(texture_albedo, base_uv);
+    
+    // Bubble-specific color and opacity
+    ALBEDO = bubble_color.rgb * albedo_tex.rgb;
+    ALPHA = bubble_color.a * bubble_opacity * albedo_tex.a;
+
+    // Fresnel effect for more realistic bubble appearance
+    float fresnel = pow(1.0 - max(dot(NORMAL, VIEW), 0.0), 5.0);
+    ALPHA *= mix(0.2, 1.0, fresnel);
+
+    // Specular and roughness for glassy look
+    SPECULAR = specular * (1.0 - fresnel * 0.5);
+    ROUGHNESS = roughness * (1.0 + fresnel * 0.5);
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3li8b"]
+render_priority = 0
+shader = SubResource("Shader_v6fml")
+shader_parameter/albedo_texture_size = Vector2i(0, 0)
+shader_parameter/point_size = 1.0
+shader_parameter/bubble_color = Color(0.8, 0.9, 1, 0.6)
+shader_parameter/bubble_distortion = 0.02
+shader_parameter/bubble_movement_speed = 1.0
+shader_parameter/bubble_opacity = 0.7
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/specular = 0.5
+shader_parameter/roughness = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_5q5h1"]
+material = SubResource("ShaderMaterial_3li8b")
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_p0vlq"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_p0vlq")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_5q5h1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_p0vlq")
+
+[node name="Tap" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_v6fml")
+volume_db = -15.0
